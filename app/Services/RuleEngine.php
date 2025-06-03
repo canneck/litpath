@@ -31,18 +31,17 @@ class RuleEngine
         $rules = $rulesData['rules'] ?? [];
         $recommendations = [];
 
-        // Itera cada regla y verifica coincidencias
+        $allGroupedResults = [];
+
         foreach ($rules as $rule) {
             if ($this->matchesConditions($rule['condition'], $userPreferences)) {
-                $recommendations = array_merge(
-                    $recommendations,
-                    $this->processAction($rule['action'], $userPreferences)
-                );
+                $grouped = $this->processAction($rule['action'], $userPreferences);
+                $allGroupedResults = array_merge($allGroupedResults, $grouped);
             }
         }
 
-        // Limita el total de recomendaciones a 5
-        return array_slice($recommendations, 0, 5);
+        // Intercala y limita a 5 recomendaciones
+        return $this->interleaveArrays($allGroupedResults, 5);
     }
 
     /**
@@ -50,7 +49,7 @@ class RuleEngine
      */
     private function processAction(array $action, array $userPreferences): array
     {
-        $results = [];
+        $groupedResults = [];
         $limit = $action['limit'] ?? 5;
 
         if ($action['type'] === 'openlibrary_genre' && !empty($userPreferences[$action['query_field']])) {
@@ -59,7 +58,7 @@ class RuleEngine
                     'limit' => $limit
                 ]);
                 $works = $response->json('works') ?? [];
-                $results = array_merge($results, $works);
+                $groupedResults[] = $works;
             }
         }
 
@@ -70,11 +69,11 @@ class RuleEngine
                     'limit' => $limit
                 ]);
                 $docs = $response->json('docs') ?? [];
-                $results = array_merge($results, $docs);
+                $groupedResults[] = $docs;
             }
         }
 
-        return $results;
+        return $groupedResults;
     }
 
     /**
@@ -97,5 +96,28 @@ class RuleEngine
             }
         }
         return true; // Todas las condiciones coinciden
+    }
+
+    /**
+     * Interleave multiple arrays into one, up to a specified limit.
+     */
+    private function interleaveArrays(array $arrays, int $limit): array
+    {
+        $result = [];
+        $pointers = array_fill(0, count($arrays), 0);
+
+        while (count($result) < $limit) {
+            $added = false;
+            foreach ($arrays as $i => $arr) {
+                if (isset($arr[$pointers[$i]])) {
+                    $result[] = $arr[$pointers[$i]];
+                    $pointers[$i]++;
+                    $added = true;
+                    if (count($result) >= $limit) break;
+                }
+            }
+            if (!$added) break; // No quedan más elementos
+        }
+        return $result;
     }
 }
