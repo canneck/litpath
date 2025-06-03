@@ -29,7 +29,6 @@ class RuleEngine
         // Lee y decodifica el JSON
         $rulesData = json_decode(file_get_contents($this->rulesPath), true);
         $rules = $rulesData['rules'] ?? [];
-        $recommendations = [];
 
         $allGroupedResults = [];
 
