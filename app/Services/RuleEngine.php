@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class RuleEngine
@@ -53,21 +54,27 @@ class RuleEngine
 
         if ($action['type'] === 'openlibrary_genre' && !empty($userPreferences[$action['query_field']])) {
             foreach ($userPreferences[$action['query_field']] as $genre) {
-                $response = Http::get('https://openlibrary.org/subjects/' . urlencode($genre) . '.json', [
-                    'limit' => $limit
-                ]);
-                $works = $response->json('works') ?? [];
+                $key = 'openlibrary_genre_' . md5($genre . '_' . $limit);
+                $works = Cache::remember($key, 3600, function () use ($genre, $limit) {
+                    $response = Http::get('https://openlibrary.org/subjects/' . urlencode($genre) . '.json', [
+                        'limit' => $limit
+                    ]);
+                    return $response->json('works') ?? [];
+                });
                 $groupedResults[] = $works;
             }
         }
 
         if ($action['type'] === 'openlibrary_author' && !empty($userPreferences[$action['query_field']])) {
             foreach ($userPreferences[$action['query_field']] as $author) {
-                $response = Http::get('https://openlibrary.org/search.json', [
-                    'author' => $author,
-                    'limit' => $limit
-                ]);
-                $docs = $response->json('docs') ?? [];
+                $key = 'openlibrary_author_' . md5($author . '_' . $limit);
+                $docs = Cache::remember($key, 3600, function () use ($author, $limit) {
+                    $response = Http::get('https://openlibrary.org/search.json', [
+                        'author' => $author,
+                        'limit' => $limit
+                    ]);
+                    return $response->json('docs') ?? [];
+                });
                 $groupedResults[] = $docs;
             }
         }

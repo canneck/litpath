@@ -1321,3 +1321,4 @@ Stack trace:
 #28 C:\\xampp\\htdocs\\litpath\\artisan(16): Illuminate\\Foundation\\Application->handleCommand(Object(Symfony\\Component\\Console\\Input\\ArgvInput))
 #29 {main}
 "} 
+[2025-06-03 22:03:20] local.ERROR: Error en RuleEngine: SQLSTATE[HY000] [1049] Unknown database 'litpath' (Connection: mysql, SQL: select * from `cache` where `key` in (laravel_cache_openlibrary_genre_0716c94f85f14c56b7177a68d8bbb7c1))  
