@@ -1,44 +1,26 @@
 {
-    "rules": [
-        {
-            "id": "genre_fantasy_lover",
-            "condition": {
-                "favorite_genre": "fantasía"
-            },
-            "action": {
-                "recommend": "El Hobbit",
-                "reason": "Clásico esencial para amantes de la fantasía."
-            }
-        },
-        {
-            "id": "genre_sci_fi_lover",
-            "condition": {
-                "favorite_genre": "ciencia ficción"
-            },
-            "action": {
-                "recommend": "Dune",
-                "reason": "Obra maestra de la ciencia ficción."
-            }
-        },
-        {
-            "id": "author_lovecraft_fan",
-            "condition": {
-                "favorite_author": "H.P. Lovecraft"
-            },
-            "action": {
-                "recommend": "La llamada de Cthulhu",
-                "reason": "Relato icónico de tu autor favorito."
-            }
-        },
-        {
-            "id": "author_rowling_fan",
-            "condition": {
-                "favorite_author": "J.K. Rowling"
-            },
-            "action": {
-                "recommend": "Harry Potter y la piedra filosofal",
-                "reason": "Viaja de nuevo al inicio de la magia."
-            }
-        }
-    ]
+  "rules": [
+    {
+      "id": "genre_recommendation",
+      "condition": {
+        "favorite_genres": []
+      },
+      "action": {
+        "type": "openlibrary_genre",
+        "query_field": "favorite_genres",
+        "limit": 5
+      }
+    },
+    {
+      "id": "author_recommendation",
+      "condition": {
+        "favorite_authors": []
+      },
+      "action": {
+        "type": "openlibrary_author",
+        "query_field": "favorite_authors",
+        "limit": 5
+      }
+    }
+  ]
 }

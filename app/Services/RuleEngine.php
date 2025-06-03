@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+
 class RuleEngine
 {
     protected $rulesPath;
@@ -13,8 +15,8 @@ class RuleEngine
     }
 
     /**
-     * Evalúa las preferencias del usuario contra las reglas.
-     * @param array $userPreferences Ej: ["favorite_genre" => "fantasía", "favorite_author" => "J.K. Rowling"]
+     * Evalúa las preferencias del usuario contra las reglas y ejecuta acciones.
+     * @param array $userPreferences Ej: ["favorite_genres" => ["fantasía"], "favorite_authors" => ["J.K. Rowling"]]
      * @return array Recomendaciones que coinciden.
      */
     public function evaluate(array $userPreferences)
@@ -32,22 +34,66 @@ class RuleEngine
         // Itera cada regla y verifica coincidencias
         foreach ($rules as $rule) {
             if ($this->matchesConditions($rule['condition'], $userPreferences)) {
-                $recommendations[] = $rule['action'];
+                $recommendations = array_merge(
+                    $recommendations,
+                    $this->processAction($rule['action'], $userPreferences)
+                );
             }
         }
 
-        return $recommendations;
+        // Limita el total de recomendaciones a 5
+        return array_slice($recommendations, 0, 5);
+    }
+
+    /**
+     * Ejecuta la acción de la regla, consultando Open Library según tipo.
+     */
+    private function processAction(array $action, array $userPreferences): array
+    {
+        $results = [];
+        $limit = $action['limit'] ?? 5;
+
+        if ($action['type'] === 'openlibrary_genre' && !empty($userPreferences[$action['query_field']])) {
+            foreach ($userPreferences[$action['query_field']] as $genre) {
+                $response = Http::get('https://openlibrary.org/subjects/' . urlencode($genre) . '.json', [
+                    'limit' => $limit
+                ]);
+                $works = $response->json('works') ?? [];
+                $results = array_merge($results, $works);
+            }
+        }
+
+        if ($action['type'] === 'openlibrary_author' && !empty($userPreferences[$action['query_field']])) {
+            foreach ($userPreferences[$action['query_field']] as $author) {
+                $response = Http::get('https://openlibrary.org/search.json', [
+                    'author' => $author,
+                    'limit' => $limit
+                ]);
+                $docs = $response->json('docs') ?? [];
+                $results = array_merge($results, $docs);
+            }
+        }
+
+        return $results;
     }
 
     /**
      * Compara las condiciones de una regla con las preferencias del usuario.
+     * Ahora permite condiciones vacías para listas (arrays).
      */
     private function matchesConditions(array $conditions, array $userPreferences): bool
     {
         foreach ($conditions as $key => $value) {
-            // Si el usuario no tiene la clave o el valor no coincide, la regla no aplica
-            if (!isset($userPreferences[$key]) || $userPreferences[$key] != $value) {
-                return false;
+            // Si la condición es un array vacío, solo verifica que el usuario tenga ese campo y que sea un array no vacío
+            if (is_array($value) && $value === []) {
+                if (!isset($userPreferences[$key]) || !is_array($userPreferences[$key]) || empty($userPreferences[$key])) {
+                    return false;
+                }
+            } else {
+                // Si el usuario no tiene la clave o el valor no coincide, la regla no aplica
+                if (!isset($userPreferences[$key]) || $userPreferences[$key] != $value) {
+                    return false;
+                }
             }
         }
         return true; // Todas las condiciones coinciden
