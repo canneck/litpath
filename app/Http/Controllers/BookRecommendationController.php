@@ -6,6 +6,7 @@ use App\Services\RuleEngine;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use App\Models\RecommendationFeedback;
 
 class BookRecommendationController extends Controller
 {
@@ -59,5 +60,20 @@ class BookRecommendationController extends Controller
                 'error_details' => env('APP_DEBUG') ? $e->getMessage() : null,
             ], 500);
         }
+    }
+
+    public function feedback(Request $request)
+    {
+        $validated = $request->validate([
+            'stars' => 'required|integer|min:0|max:5',
+            'user_id' => 'nullable|integer',
+        ]);
+
+        $feedback = RecommendationFeedback::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'feedback' => $feedback,
+        ]);
     }
 }
