@@ -39,9 +39,16 @@ class BookRecommendationController extends Controller
                 ], 200);
             }
 
+            $resume = collect($recommendations)->map(function ($item) {
+                return [
+                    'title' => $item['title'],
+                    'authors' => collect($item['authors'])->pluck('name'),
+                ];
+            });
+
             return response()->json([
                 'success' => true,
-                'recommendations' => $recommendations,
+                'recommendations' => $resume,
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
