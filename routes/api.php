@@ -44,3 +44,7 @@ Route::post('/feedback', [BookRecommendationController::class, 'feedback'])
   "user_id": 1
 }
 */
+
+Route::get('/ping', function () {
+    return response()->json(['message' => 'pong']);
+});

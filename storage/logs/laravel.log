@@ -1323,3 +1323,6 @@ Stack trace:
 "} 
 [2025-06-03 22:03:20] local.ERROR: Error en RuleEngine: SQLSTATE[HY000] [1049] Unknown database 'litpath' (Connection: mysql, SQL: select * from `cache` where `key` in (laravel_cache_openlibrary_genre_0716c94f85f14c56b7177a68d8bbb7c1))  
 [2025-06-16 17:15:59] local.ERROR: Error en RuleEngine: SQLSTATE[HY000] [2002] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión (Connection: mysql, SQL: select * from `cache` where `key` in (laravel_cache_openlibrary_genre_e8e661c4561332bcb27706f165a35fb3))  
+[2025-06-16 21:29:32] local.ERROR: Error en RuleEngine: Undefined array key "authors"  
+[2025-06-16 21:38:07] local.ERROR: Error en RuleEngine: Undefined array key "authors"  
+[2025-06-16 21:40:09] local.ERROR: Error en RuleEngine: Undefined array key "authors"  

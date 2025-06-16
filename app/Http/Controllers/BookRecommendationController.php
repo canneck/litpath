@@ -41,8 +41,10 @@ class BookRecommendationController extends Controller
 
             $resume = collect($recommendations)->map(function ($item) {
                 return [
-                    'title' => $item['title'],
-                    'authors' => collect($item['authors'])->pluck('name'),
+                    'title' => $item['title'] ?? 'Sin título',
+                    'authors' => isset($item['authors']) && is_array($item['authors'])
+                        ? collect($item['authors'])->pluck('name')
+                        : [],
                 ];
             });
 
